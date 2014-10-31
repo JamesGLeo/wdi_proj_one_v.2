@@ -1,0 +1,87 @@
+<!-- Party Info -->
+<h2>Table <%= @party.assigned_table %></h2>
+
+<h3>Group Size : <%= @party.groupsize %></h3>
+<h3>Check Paid? : <%= @party.paid_check == true ? "Yes" : "No" %> </h3>
+
+<ul>
+
+<!-- Print Receipt -->
+  <li>
+  <form action="/parties/<%= @party.id %>/receipts" method="post">
+    <% @party.orders.each do |order| %>
+    <input type="hidden" name="order[dishname][]" value="<%= order.food.dishname %>">
+    <input type="hidden" name="order[price][]" value="<%= order.food.price %>">
+    <% end %>
+    <input type="hidden" name="party[party_id]" value="<%= @party.id %>">
+    <input type="submit" value="Print Receipt">
+  </form>
+  </li>
+  <!-- Form to Edit Party -->
+  <li>
+  <form action="/parties/<%= @party.id %>/edit">
+    <input type="hidden" name="_method">
+    <input type="submit" value="Edit party">
+  </form>
+  </li>
+  <!-- Form to Delete Party -->
+  <li>
+  <form action="/parties/<%= @party.id %>" method="post">
+    <input type="hidden" name="_method" value="delete">
+    <input type="submit" value="Delete party">
+  </form>
+  </li>
+</ul>
+
+<!-- Show current orders -->
+<h2>Current Orders</h2>
+<table>
+  <% @party.orders.each do |order| %>
+  
+  <tr> 
+  <td><%= order.food.dishname %> - - - P:<%= order.food.price %></td> 
+
+<!-- Delete orders -->
+    <td>
+    <form action="/orders/<%= order.id %>" method="post">
+      <input type="hidden" name="_method" value="delete">
+      <input type="hidden" name="order[id]" value="<%= order.id %>">
+      <input type="submit" value="Delete Order">
+    </form>
+    </td>
+<!-- Make order free -->
+    <td>
+    <form action="/orders/<%= order.id %>" method="post">
+      <input type="hidden" name="_method" value="patch">
+      <input type="hidden" name="order[charge]" value="<%= 0 %>">
+      <input type="submit" value="On the House"> 
+    </form>
+    </td>
+  </tr>
+  <input type="hidden" name="party[party_id]" value="<%= @party.id %>">
+  <% end %>
+</table>
+
+<!-- Checkout Function -->
+<form action="/parties/<%= @party.id %>/checkout" method="post">
+  <input type="hidden" name="_method" value="patch">
+  <input type="submit" value="Checkout">
+</form>
+
+<!-- Add new orders -->
+<h2>Place an Order</h2>
+
+<form action="/orders" method="post">
+  <ul>
+    <% @foods.each do |food| %>
+      <li>
+        <input type="checkbox" name="food[<%= food.id %>]"><%= food.dishname %>
+        <input type="hidden" name="order[charge]" value="<%= food.price %>">
+      </li>
+    <% end %>
+  </ul>
+  <input type="hidden" name="party[party_id]" value="<%= @party.id %>">
+  <input type="submit" value="Enter order">
+</form>
+
+
